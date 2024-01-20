@@ -65,8 +65,8 @@ class Recommandation extends Module
 
         return parent::install() &&
             $this->registerHook('header') &&
-            $this->registerHook('displayBackOfficeHeader') &&
-            $this->registerHook('displayRightColumnProduct');
+            $this->registerHook('displayBackOfficeHeader'); // &&
+//            $this->registerHook('displayRightColumnProduct');
     }
 
     public function uninstall()
@@ -84,11 +84,103 @@ class Recommandation extends Module
         /**
          * If values have been submitted in the form, process.
          */
+
+        $apiError = "";
+
         if (((bool)Tools::isSubmit('submitRecommandationModule')) == true) {
             $this->postProcess();
         }
 
+        if (((bool)Tools::isSubmit('getRecommandation')) == true) {
+            $form_values = $this->getConfigFormValues();
+
+            // We verify that all the values are set
+
+            if (isset($form_values['RECOMMANDATION_API_URL']) && isset($form_values['RECOMMANDATION_LOGIN']) && isset($form_values['RECOMMANDATION_PASSWORD']) && !empty($form_values['RECOMMANDATION_API_URL']) && !empty($form_values['RECOMMANDATION_LOGIN']) && !empty($form_values['RECOMMANDATION_PASSWORD'])) {
+                $url = $form_values['RECOMMANDATION_API_URL'];
+                $login = $form_values['RECOMMANDATION_LOGIN'];
+                $password = $form_values['RECOMMANDATION_PASSWORD'];
+
+                // We verify that the url is valid
+                if (filter_var($url,FILTER_VALIDATE_URL) || filter_var($url,FILTER_VALIDATE_IP) || $url == 'localhost') {
+                    // We get all the activated products on prestashop
+
+                    $products = Product::getProducts($this->context->language->id, 0, 0, 'id_product', 'ASC', false, true);
+
+                    foreach($products as $p){
+                        var_dump($p['name']);
+
+
+                        // We call the API to get the recommandation
+                        $ch = curl_init();
+
+                        // We set up the final url
+
+                        $name = str_replace(" ", "%20", $p['name']);
+
+
+                        $finalUrl = $url . "/recommend/" . $name;
+
+                        var_dump($finalUrl);
+
+                        // We set the url
+                        curl_setopt($ch, CURLOPT_URL, $finalUrl);
+
+                        // We set the login and the password
+                        curl_setopt($ch, CURLOPT_USERPWD, $login . ":" . $password);
+
+                        // We set the header
+                        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type:application/json'));
+
+                        // We set the method
+                        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "GET");
+
+                        // Set CURLOPT_RETURNTRANSFER to true
+                        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+                        // We get the response
+                        $response = curl_exec($ch);
+
+                        // Add the recommandation in the product
+                        if (!empty($response)) {
+                            // Get the array in the response
+                            $response = json_decode($response, true);
+
+                            // We verify that the array is not empty
+                            if (count($response['recommendations']) > 0) {
+                                $recommandation = $response;
+
+                                $product = new Product($p['id_product']);
+
+                                var_dump($product);
+
+                                // We add the associations to the product
+
+                            }
+                        }
+                    }
+
+                    die();
+
+
+                } else {
+                    // Add an error message in apiError
+                    $apiError = "The URL is not valid";
+                }
+            } else {
+                // Add an error message in apiError
+                $apiError = "Please fill all the fields";
+            }
+
+//            die();
+        }
+        $this->context->smarty->assign('apiError', $apiError);
+
         $this->context->smarty->assign('module_dir', $this->_path);
+
+        $action = $this->context->link->getAdminLink('AdminModules', true, [], ['configure' => $this->name]);
+
+        $this->context->smarty->assign('action', $action);
 
         $output = $this->context->smarty->fetch($this->local_path.'views/templates/admin/configure.tpl');
 
@@ -208,8 +300,8 @@ class Recommandation extends Module
         $this->context->controller->addCSS($this->_path.'/views/css/front.css');
     }
 
-    public function hookDisplayRightColumnProduct()
-    {
-        return $this->display(__FILE__, 'views/templates/front/recommandation.tpl');
-    }
+//    public function hookDisplayRightColumnProduct()
+//    {
+//
+//    }
 }
