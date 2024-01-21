@@ -4,6 +4,7 @@ class Product extends ProductCore
 {
     public function addAccessoriesToProduct($accessories)
     {
+        var_dump($accessories);
         foreach ($accessories as $id_accessory) {
             $accessory = new Product($id_accessory);
             if ($accessory->id) {
