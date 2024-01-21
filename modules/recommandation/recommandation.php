@@ -174,7 +174,7 @@ class Recommandation extends Module
                                 }
 
                                 var_dump($ids);
-                                $products->addAccessoriesToProduct();
+                                $product->addAccessoriesToProduct($ids, $p['id_product']);
 
                             }
                         }
