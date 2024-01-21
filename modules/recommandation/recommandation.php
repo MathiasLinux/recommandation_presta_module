@@ -1,28 +1,28 @@
 <?php
 /**
-* 2007-2024 PrestaShop
-*
-* NOTICE OF LICENSE
-*
-* This source file is subject to the Academic Free License (AFL 3.0)
-* that is bundled with this package in the file LICENSE.txt.
-* It is also available through the world-wide-web at this URL:
-* http://opensource.org/licenses/afl-3.0.php
-* If you did not receive a copy of the license and are unable to
-* obtain it through the world-wide-web, please send an email
-* to license@prestashop.com so we can send you a copy immediately.
-*
-* DISCLAIMER
-*
-* Do not edit or add to this file if you wish to upgrade PrestaShop to newer
-* versions in the future. If you wish to customize PrestaShop for your
-* needs please refer to http://www.prestashop.com for more information.
-*
-*  @author    PrestaShop SA <contact@prestashop.com>
-*  @copyright 2007-2024 PrestaShop SA
-*  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
-*  International Registered Trademark & Property of PrestaShop SA
-*/
+ * 2007-2024 PrestaShop
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Academic Free License (AFL 3.0)
+ * that is bundled with this package in the file LICENSE.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/afl-3.0.php
+ * If you did not receive a copy of the license and are unable to
+ * obtain it through the world-wide-web, please send an email
+ * to license@prestashop.com so we can send you a copy immediately.
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade PrestaShop to newer
+ * versions in the future. If you wish to customize PrestaShop for your
+ * needs please refer to http://www.prestashop.com for more information.
+ *
+ * @author    PrestaShop SA <contact@prestashop.com>
+ * @copyright 2007-2024 PrestaShop SA
+ * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
+ *  International Registered Trademark & Property of PrestaShop SA
+ */
 
 if (!defined('_PS_VERSION_')) {
     exit;
@@ -102,12 +102,12 @@ class Recommandation extends Module
                 $password = $form_values['RECOMMANDATION_PASSWORD'];
 
                 // We verify that the url is valid
-                if (filter_var($url,FILTER_VALIDATE_URL) || filter_var($url,FILTER_VALIDATE_IP) || $url == 'localhost') {
+                if (filter_var($url, FILTER_VALIDATE_URL) || filter_var($url, FILTER_VALIDATE_IP) || $url == 'localhost') {
                     // We get all the activated products on prestashop
 
                     $products = Product::getProducts($this->context->language->id, 0, 0, 'id_product', 'ASC', false, true);
 
-                    foreach($products as $p){
+                    foreach ($products as $p) {
                         var_dump($p['name']);
 
 
@@ -152,9 +152,29 @@ class Recommandation extends Module
 
                                 $product = new Product($p['id_product']);
 
-                                var_dump($product);
+                                // We get the ids of the recommandation using the name
 
-                                // We add the associations to the product
+                                $ids = array();
+
+                                var_dump($recommandation['recommendations']);
+
+
+                                foreach ($recommandation['recommendations'] as $r) {
+                                    $recommandationProduct = Product::searchByName($this->context->language->id, $r);
+
+                                    var_dump($recommandationProduct);
+
+                                    if ($recommandationProduct !== false) {
+                                        if (count($recommandationProduct) > 0) {
+                                            foreach ($recommandationProduct as $rp) {
+                                                $ids[] = $rp['id_product'];
+                                            }
+                                        }
+                                    }
+                                }
+
+                                var_dump($ids);
+                                $products->addAccessoriesToProduct($ids);
 
                             }
                         }
@@ -182,9 +202,9 @@ class Recommandation extends Module
 
         $this->context->smarty->assign('action', $action);
 
-        $output = $this->context->smarty->fetch($this->local_path.'views/templates/admin/configure.tpl');
+        $output = $this->context->smarty->fetch($this->local_path . 'views/templates/admin/configure.tpl');
 
-        return $output.$this->renderForm();
+        return $output . $this->renderForm();
     }
 
     /**
@@ -203,7 +223,7 @@ class Recommandation extends Module
         $helper->identifier = $this->identifier;
         $helper->submit_action = 'submitRecommandationModule';
         $helper->currentIndex = $this->context->link->getAdminLink('AdminModules', false)
-            .'&configure='.$this->name.'&tab_module='.$this->tab.'&module_name='.$this->name;
+            . '&configure=' . $this->name . '&tab_module=' . $this->tab . '&module_name=' . $this->name;
         $helper->token = Tools::getAdminTokenLite('AdminModules');
 
         $helper->tpl_vars = array(
@@ -223,8 +243,8 @@ class Recommandation extends Module
         return array(
             'form' => array(
                 'legend' => array(
-                'title' => $this->l('Settings'),
-                'icon' => 'icon-cogs',
+                    'title' => $this->l('Settings'),
+                    'icon' => 'icon-cogs',
                 ),
                 'input' => array(
                     array(
@@ -281,13 +301,13 @@ class Recommandation extends Module
     }
 
     /**
-    * Add the CSS & JavaScript files you want to be loaded in the BO.
-    */
+     * Add the CSS & JavaScript files you want to be loaded in the BO.
+     */
     public function hookDisplayBackOfficeHeader()
     {
         if (Tools::getValue('configure') == $this->name) {
-            $this->context->controller->addJS($this->_path.'views/js/back.js');
-            $this->context->controller->addCSS($this->_path.'views/css/back.css');
+            $this->context->controller->addJS($this->_path . 'views/js/back.js');
+            $this->context->controller->addCSS($this->_path . 'views/css/back.css');
         }
     }
 
@@ -296,8 +316,8 @@ class Recommandation extends Module
      */
     public function hookHeader()
     {
-        $this->context->controller->addJS($this->_path.'/views/js/front.js');
-        $this->context->controller->addCSS($this->_path.'/views/css/front.css');
+        $this->context->controller->addJS($this->_path . '/views/js/front.js');
+        $this->context->controller->addCSS($this->_path . '/views/css/front.css');
     }
 
 //    public function hookDisplayRightColumnProduct()
