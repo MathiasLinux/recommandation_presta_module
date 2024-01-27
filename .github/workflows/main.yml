@@ -1,0 +1,40 @@
+---
+name: "pre-release"
+
+on:
+    push:
+        branches:
+            - "master"
+
+jobs:
+    pre-release:
+        name: "Pre Release"
+        runs-on: "ubuntu-latest"
+
+        steps:
+            - name: "Checkout"
+              uses: actions/checkout@v2
+
+            - name: "Prepare files"
+              run: |
+                  sudo mkdir /opt/recommandation
+                  sudo mv ${{ github.workspace }}/modules/recommandation/* /opt/recommandation
+
+            - name: "Zipping"
+              run: |
+                  cd /opt
+                  sudo zip -r ${{ github.workspace }}/recommandation.zip ./recommandation/*
+
+            - name: "Get date"
+              id: "date"
+              run: |
+                  echo "::set-output name=date::$(date +'%Y-%m-%d_%H%M%S')"
+
+            - uses: "marvinpinto/action-automatic-releases@latest"
+              with:
+                  repo_token: "${{ secrets.GITHUB_TOKEN }}"
+                  automatic_release_tag: "dev-${{ steps.date.outputs.date }}"
+                  prerelease: true
+                  title: "Development Build - ${{ steps.date.outputs.date }}"
+                  files: |
+                      ${{ github.workspace }}/recommandation.zip
