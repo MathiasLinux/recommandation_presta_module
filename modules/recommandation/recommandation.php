@@ -86,6 +86,7 @@ class Recommandation extends Module
          */
 
         $apiError = "";
+        $apiOk = "";
 
         if (((bool)Tools::isSubmit('submitRecommandationModule')) == true) {
             $this->postProcess();
@@ -108,7 +109,7 @@ class Recommandation extends Module
                     $products = Product::getProducts($this->context->language->id, 0, 0, 'id_product', 'ASC', false, true);
 
                     foreach ($products as $p) {
-                        var_dump($p['name']);
+//                        var_dump($p['name']);
 
 
                         // We call the API to get the recommandation
@@ -121,7 +122,7 @@ class Recommandation extends Module
 
                         $finalUrl = $url . "/recommend/" . $name;
 
-                        var_dump($finalUrl);
+//                        var_dump($finalUrl);
 
                         // We set the url
                         curl_setopt($ch, CURLOPT_URL, $finalUrl);
@@ -156,13 +157,13 @@ class Recommandation extends Module
 
                                 $ids = array();
 
-                                var_dump($recommandation['recommendations']);
+//                                var_dump($recommandation['recommendations']);
 
 
                                 foreach ($recommandation['recommendations'] as $r) {
                                     $recommandationProduct = Product::searchByName($this->context->language->id, $r);
 
-                                    var_dump($recommandationProduct);
+//                                    var_dump($recommandationProduct);
 
                                     if ($recommandationProduct !== false) {
                                         if (count($recommandationProduct) > 0) {
@@ -173,28 +174,35 @@ class Recommandation extends Module
                                     }
                                 }
 
-                                var_dump($ids);
-                                $product->addAccessoriesToProduct($ids, $p['id_product']);
+//                                var_dump($product);
+                                if ($product instanceof Product) {
+                                    $product->addAccessoriesToProduct($ids, $p['id_product']);
+                                    $apiOk = "The recommandations has been added !";
+                                } else {
+                                    // Handle error, e.g., log it or throw an exception
+                                    error_log('Invalid product ID: ' . $p['id_product']);
+                                }
 
                             }
                         }
                     }
 
-                    die();
-
 
                 } else {
                     // Add an error message in apiError
                     $apiError = "The URL is not valid";
+                    $apiOk = "";
                 }
             } else {
                 // Add an error message in apiError
                 $apiError = "Please fill all the fields";
+                $apiOk = "";
             }
 
 //            die();
         }
         $this->context->smarty->assign('apiError', $apiError);
+        $this->context->smarty->assign('apiOk', $apiOk);
 
         $this->context->smarty->assign('module_dir', $this->_path);
 

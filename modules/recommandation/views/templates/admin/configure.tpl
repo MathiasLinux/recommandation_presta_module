@@ -32,8 +32,12 @@
         <button type="submit" class="btn btn-primary" id="getRecommandation"
                 name="getRecommandation">{l s='Get recommandations' mod='recommandation'}</button>
     </form>
+    <br/>
     <div class="alert alert-danger apiError" role="alert">
         {$apiError}
+    </div>
+    <div class="alert alert-success apiOk" role="alert">
+        {$apiOk}
     </div>
     </p>
 </div>
@@ -55,4 +59,20 @@
     } else {
         apiError.style.display = "block"
     }
+
+    let apiOk = document.querySelector(".apiOk")
+
+    if (apiOk.innerText === ""){
+        apiOk.style.display = "none"
+    } else {
+        apiOk.style.display = "block"
+    }
+
+    let buttonGetRecommandation = document.querySelector("#getRecommandation");
+
+    // Add a spinner when the user click on the button and remove it when the page is loaded
+    buttonGetRecommandation.addEventListener("click", function (e) {
+        // Change the text of the button to Loading...
+        buttonGetRecommandation.innerText = "Loading..."
+    });
 </script>
